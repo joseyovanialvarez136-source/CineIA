@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CineIA | Crea tu cortometraje</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#060c16;color:#f4f7ff;font-family:Arial,sans-serif}
+header{padding:20px;display:flex;justify-content:space-between;align-items:center;background:#0b1728;border-bottom:1px solid #233650}
+.logo{font-size:25px;font-weight:bold}.logo span{color:#38a5ff}
+main{max-width:850px;margin:35px auto;padding:18px}
+h1{font-size:clamp(32px,7vw,48px);line-height:1.15}
+p{color:#b7c5d8;line-height:1.6}
+.card{background:#0c1a2c;border:1px solid #28435f;border-radius:17px;padding:22px}
+label{display:block;margin:16px 0 8px;font-weight:bold}
+textarea,select{width:100%;padding:14px;border-radius:10px;border:1px solid #34516e;background:#071322;color:white;font-size:16px}
+textarea{min-height:125px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+button{width:100%;padding:16px;margin-top:22px;border:0;border-radius:10px;background:linear-gradient(90deg,#168cff,#6657ff);color:white;font-size:16px;font-weight:bold}
+button:disabled{opacity:.6}
+#result{display:none;margin-top:22px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.small{font-size:13px;color:#8fa4bd}
+@media(max-width:550px){.grid{grid-template-columns:1fr}main{padding:14px}}
+</style>
+</head>
+<body>
+<header><div class="logo">🎬 Cine<span>IA</span></div><span>Tu historia, tu película</span></header>
+<main>
+<h1>Convierte tus ideas en <span style="color:#38a5ff">cortometrajes con IA</span></h1>
+<p>Empieza con una idea. CineIA te ayudará a convertirla en un guion organizado con escenas y diálogos.</p>
+<section class="card">
+<label for="story">¿Cuál es tu idea?</label>
+<textarea id="story" placeholder="Ejemplo: Una joven descubre una puerta secreta en su casa..."></textarea>
+<div class="grid">
+<div><label for="genre">Género</label><select id="genre"><option>Terror</option><option>Acción</option><option>Romance</option><option>Ciencia ficción</option><option>Comedia</option><option>Drama</option><option>Aventura</option></select></div>
+<div><label for="duration">Duración</label><select id="duration"><option>30 segundos</option><option>1 minuto</option><option selected>3 minutos</option><option>5 minutos</option></select></div>
+<div><label for="style">Estilo visual</label><select id="style"><option>Cinematográfico</option><option>Realista</option><option>Animación 3D</option><option>Anime</option></select></div>
+<div><label for="language">Idioma</label><select id="language"><option>Español</option><option>Inglés</option></select></div>
+</div>
+<button id="create" onclick="createFilm()">🎬 CREAR MI CORTOMETRAJE</button>
+<p id="status" role="status"></p>
+<div class="card" id="result"></div>
+<p class="small">Versión inicial de CineIA: primero generamos el guion. La creación de videos llegará en una etapa posterior.</p>
+</section>
+</main>
+<script>
+async function createFilm(){
+const story=document.getElementById("story").value.trim();
+if(!story){alert("Escribe primero tu idea.");return;}
+const button=document.getElementById("create");
+const status=document.getElementById("status");
+const result=document.getElementById("result");
+button.disabled=true;
+button.textContent="CREANDO TU GUION...";
+status.textContent="La IA está trabajando en tu historia...";
+result.style.display="none";
+try{
+const response=await fetch("/api/create-film",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+story,
+genre:document.getElementById("genre").value,
+duration:document.getElementById("duration").value,
+style:document.getElementById("style").value,
+language:document.getElementById("language").value
+})
+});
+const data=await response.json();
+if(!response.ok||!data.ok)throw new Error(data.error||"No se pudo crear el guion.");
+result.textContent=data.script;
+result.style.display="block";
+status.textContent="¡Tu guion está listo!";
+}catch(error){
+status.textContent=error.message||"No se pudo conectar con CineIA. Inténtalo de nuevo.";
+}finally{
+button.disabled=false;
+button.textContent="🎬 CREAR MI CORTOMETRAJE";
+}
+}
+</script>
+</body>
+</html>
